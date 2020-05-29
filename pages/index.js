@@ -1,9 +1,9 @@
 import Head from 'next/head'
 import { useForm, usePlugin } from 'tinacms'
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 
 function getGradientSyntax(gradientData) {
-  if (!gradientData.colors) return null
+  if (!gradientData.colors || gradientData.colors.length < 2) return null
   const gradientSteps = gradientData.colors.map(
     (colorData) => colorData.color || 'transparent'
   )
@@ -14,9 +14,7 @@ export default function Home() {
   const [gradientData, form] = useForm({
     id: 'gradient',
     label: 'Gradient',
-    initialValues: {
-      angle: 0,
-    },
+    initialValues: {},
     fields: [
       {
         name: 'angle',
@@ -46,9 +44,27 @@ export default function Home() {
       },
     ],
     onSubmit: (values) => {
-      alert(getGradientSyntax(values))
+      let code = getGradientSyntax(values) || 'Incomplete gradient'
+      alert(code)
     },
   })
+
+  // update on mount instead of using initialValues so "Get Code" button isn't disabled
+  useEffect(() => {
+    form.updateValues({
+      angle: 15,
+      colors: [
+        {
+          id: Math.random().toString(36),
+          color: '#EC4815',
+        },
+        {
+          id: Math.random().toString(36),
+          color: '#e6faf8',
+        },
+      ],
+    })
+  }, [])
   const cssGradient = useMemo(
     () => getGradientSyntax(gradientData) || 'white',
     [gradientData]
