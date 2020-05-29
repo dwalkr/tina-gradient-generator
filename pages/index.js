@@ -1,8 +1,61 @@
 import Head from 'next/head'
+import { useForm, usePlugin } from 'tinacms'
+import { useMemo } from 'react'
+
+function getGradientSyntax(gradientData) {
+  if (!gradientData.colors) return null
+  const gradientSteps = gradientData.colors.map(
+    (colorData) => colorData.color || 'transparent'
+  )
+  return `linear-gradient(${gradientData.angle}deg, ${gradientSteps.join(',')})`
+}
 
 export default function Home() {
+  const [gradientData, form] = useForm({
+    id: 'gradient',
+    label: 'Gradient',
+    initialValues: {
+      angle: 0,
+    },
+    fields: [
+      {
+        name: 'angle',
+        label: 'Angle',
+        component: 'number',
+      },
+      {
+        name: 'colors',
+        label: 'Colors',
+        component: 'group-list',
+        itemProps: (item) => ({
+          key: `${item.id}`,
+          label: `${item.color}`,
+        }),
+        defaultItem: () => ({
+          id: Math.random().toString(36),
+          color: '#000',
+          breakpoint: 0,
+        }),
+        fields: [
+          {
+            name: 'color',
+            label: 'Color',
+            component: 'color',
+          },
+        ],
+      },
+    ],
+    onSubmit: (values) => {
+      alert(getGradientSyntax(values))
+    },
+  })
+  const cssGradient = useMemo(
+    () => getGradientSyntax(gradientData) || 'white',
+    [gradientData]
+  )
+  usePlugin(form)
   return (
-    <div className="container">
+    <div className="container" style={{ background: cssGradient }}>
       <Head>
         <title>Create Next App</title>
         <link rel="icon" href="/favicon.ico" />
@@ -12,40 +65,6 @@ export default function Home() {
         <h1 className="title">
           Welcome to <a href="https://nextjs.org">Next.js!</a>
         </h1>
-
-        <p className="description">
-          Get started by editing <code>pages/index.js</code>
-        </p>
-
-        <div className="grid">
-          <a href="https://nextjs.org/docs" className="card">
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className="card">
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/zeit/next.js/tree/master/examples"
-            className="card"
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://zeit.co/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="card"
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with ZEIT Now.
-            </p>
-          </a>
-        </div>
       </main>
 
       <footer>
